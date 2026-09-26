@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="actions">
+    <a class="button" href="{% url 'cv:download_pdf' profile.pk %}">Download PDF</a>
+    <a href="/">Create another</a>
+</div>
+
+<article class="cv">
+    <h1>{{ profile.full_name }}</h1>
+    <h3>{{ profile.target_role }}</h3>
+    <p>{{ profile.email }} {% if profile.phone %} · {{ profile.phone }}{% endif %} {% if profile.location %} · {{ profile.location }}{% endif %}</p>
+
+    {% if profile.generated_summary or profile.bio %}
+    <h2>Professional Summary</h2>
+    <p>{{ profile.generated_summary|default:profile.bio }}</p>
+    {% endif %}
+
+    {% if profile.generated_experience or profile.experience %}
+    <h2>Experience</h2>
+    <p class="pre">{{ profile.generated_experience|default:profile.experience }}</p>
+    {% endif %}
+
+    {% if profile.education %}<h2>Education</h2><p class="pre">{{ profile.education }}</p>{% endif %}
+    {% if profile.skills %}<h2>Skills</h2><p class="pre">{{ profile.skills }}</p>{% endif %}
+    {% if profile.projects %}<h2>Projects</h2><p class="pre">{{ profile.projects }}</p>{% endif %}
+    {% if profile.certifications %}<h2>Certifications</h2><p class="pre">{{ profile.certifications }}</p>{% endif %}
+</article>
+{% endblock %}

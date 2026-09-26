@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+    <p class="eyebrow">AI CV BUILDER</p>
+    <h1>Turn your experience into a job-ready CV.</h1>
+    <p>Fill in your details. CareerForge cleans them up and creates a professional CV you can download as PDF.</p>
+</section>
+
+<section class="card">
+<form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="field">
+        <label>{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<small>{{ field.errors }}</small>{% endif %}
+    </div>
+    {% endfor %}
+    <button type="submit">Generate My CV →</button>
+</form>
+</section>
+{% endblock %}
