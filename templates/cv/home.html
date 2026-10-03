@@ -1,22 +1,1163 @@
-{% extends "base.html" %}
-{% block content %}
-<section class="hero">
-    <p class="eyebrow">AI CV BUILDER</p>
-    <h1>Turn your experience into a job-ready CV.</h1>
-    <p>Fill in your details. CareerForge cleans them up and creates a professional CV you can download as PDF.</p>
-</section>
 
-<section class="card">
-<form method="post">
-    {% csrf_token %}
-    {% for field in form %}
-    <div class="field">
-        <label>{{ field.label }}</label>
-        {{ field }}
-        {% if field.errors %}<small>{{ field.errors }}</small>{% endif %}
-    </div>
-    {% endfor %}
-    <button type="submit">Generate My CV →</button>
-</form>
-</section>
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    /* ================================
+       CAREERFORGE BUILDER
+    ================================= */
+
+    .cf-container {
+        width: min(1100px, 92%);
+        margin: 0 auto;
+    }
+
+    /* HERO */
+
+    .cf-hero {
+        text-align: center;
+        padding: 65px 0 35px;
+    }
+
+    .cf-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: #eeebff;
+        color: #6147e8;
+        padding: 9px 15px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 800;
+        margin-bottom: 18px;
+    }
+
+    .cf-hero h1 {
+        margin: 0 auto;
+        max-width: 780px;
+        font-size: clamp(34px, 6vw, 58px);
+        line-height: 1.05;
+        letter-spacing: -2px;
+    }
+
+    .cf-gradient-text {
+        background: linear-gradient(90deg, #6548ef, #a855f7);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .cf-hero p {
+        max-width: 650px;
+        margin: 20px auto 0;
+        color: #727282;
+        font-size: 17px;
+        line-height: 1.7;
+    }
+
+    /* BUILDER */
+
+    .cf-builder {
+        background: white;
+        border: 1px solid #e7e7ee;
+        border-radius: 24px;
+        box-shadow: 0 20px 70px rgba(35, 25, 90, 0.08);
+        overflow: hidden;
+        margin-bottom: 80px;
+    }
+
+    /* PROGRESS */
+
+    .cf-progress {
+        padding: 25px 30px;
+        border-bottom: 1px solid #eeeeF3;
+        background: #fcfcfe;
+    }
+
+    .cf-progress-line {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        max-width: 700px;
+        margin: auto;
+    }
+
+    .cf-progress-line::before {
+        content: "";
+        position: absolute;
+        top: 19px;
+        left: 8%;
+        right: 8%;
+        height: 2px;
+        background: #e3e3eb;
+        z-index: 0;
+    }
+
+    .cf-step {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+        color: #9999a7;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .cf-step-circle {
+        width: 39px;
+        height: 39px;
+        border-radius: 50%;
+        background: #e9e9f0;
+        color: #777786;
+        display: grid;
+        place-items: center;
+        margin: 0 auto 8px;
+        font-weight: 800;
+        transition: 0.2s;
+    }
+
+    .cf-step.active {
+        color: #6348e9;
+    }
+
+    .cf-step.active .cf-step-circle {
+        background: #6849ef;
+        color: white;
+        box-shadow: 0 7px 20px rgba(104, 73, 239, 0.25);
+    }
+
+    .cf-step.completed .cf-step-circle {
+        background: #e9e4ff;
+        color: #6849ef;
+    }
+
+    /* FORM */
+
+    .cf-form-area {
+        padding: 45px;
+    }
+
+    .cf-form-step {
+        display: none;
+        animation: fadeIn 0.25s ease;
+    }
+
+    .cf-form-step.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(5px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .cf-step-heading {
+        margin-bottom: 30px;
+    }
+
+    .cf-step-heading h2 {
+        margin: 0 0 8px;
+        font-size: 28px;
+    }
+
+    .cf-step-heading p {
+        margin: 0;
+        color: #858594;
+    }
+
+    .cf-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 22px;
+    }
+
+    .cf-field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .cf-field.full {
+        grid-column: 1 / -1;
+    }
+
+    .cf-field label {
+        font-size: 13px;
+        font-weight: 800;
+        color: #363643;
+    }
+
+    .cf-field label span {
+        color: #9999a7;
+        font-weight: 500;
+    }
+
+    .cf-field input,
+    .cf-field textarea {
+        width: 100%;
+        border: 1px solid #dedee8;
+        border-radius: 12px;
+        padding: 14px 15px;
+        background: #fff;
+        color: #171725;
+        outline: none;
+        transition: 0.2s;
+    }
+
+    .cf-field input:focus,
+    .cf-field textarea:focus {
+        border-color: #7658ef;
+        box-shadow: 0 0 0 4px rgba(118, 88, 239, 0.1);
+    }
+
+    .cf-field textarea {
+        min-height: 125px;
+        resize: vertical;
+        line-height: 1.6;
+    }
+
+    .cf-field input::placeholder,
+    .cf-field textarea::placeholder {
+        color: #b0b0bb;
+    }
+
+    .cf-help {
+        color: #9696a3;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    /* REVIEW */
+
+    .cf-review {
+        background: #f7f5ff;
+        border: 1px solid #e7e0ff;
+        border-radius: 16px;
+        padding: 20px;
+        margin-top: 28px;
+    }
+
+    .cf-review-title {
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+
+    .cf-review p {
+        margin: 0;
+        color: #77758a;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    /* BUTTONS */
+
+    .cf-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 35px;
+        padding-top: 25px;
+        border-top: 1px solid #eeeeF3;
+    }
+
+    .cf-btn {
+        border: 0;
+        border-radius: 12px;
+        padding: 13px 21px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .cf-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .cf-btn-back {
+        background: #f0f0f5;
+        color: #555563;
+    }
+
+    .cf-btn-next,
+    .cf-btn-submit {
+        background: linear-gradient(135deg, #6749ee, #8b5cf6);
+        color: white;
+        box-shadow: 0 8px 22px rgba(103, 73, 238, 0.22);
+    }
+
+    .cf-btn-submit {
+        padding-left: 25px;
+        padding-right: 25px;
+    }
+
+    /* FEATURES */
+
+    .cf-features {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-bottom: 70px;
+    }
+
+    .cf-feature {
+        background: white;
+        border: 1px solid #e9e9ef;
+        border-radius: 17px;
+        padding: 25px;
+    }
+
+    .cf-feature-icon {
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 12px;
+        background: #f0edff;
+        margin-bottom: 15px;
+    }
+
+    .cf-feature h3 {
+        margin: 0 0 7px;
+        font-size: 17px;
+    }
+
+    .cf-feature p {
+        margin: 0;
+        color: #81818e;
+        line-height: 1.6;
+        font-size: 14px;
+    }
+
+    /* FOOTER */
+
+    .cf-footer {
+        text-align: center;
+        padding: 35px 20px;
+        color: #9999a5;
+        font-size: 13px;
+    }
+
+    /* MOBILE */
+
+    @media (max-width: 750px) {
+
+        .cf-hero {
+            padding: 45px 0 25px;
+        }
+
+        .cf-hero h1 {
+            letter-spacing: -1px;
+        }
+
+        .cf-hero p {
+            font-size: 15px;
+        }
+
+        .cf-form-area {
+            padding: 28px 20px;
+        }
+
+        .cf-progress {
+            padding: 20px 10px;
+        }
+
+        .cf-step {
+            font-size: 10px;
+        }
+
+        .cf-step-circle {
+            width: 34px;
+            height: 34px;
+            font-size: 12px;
+        }
+
+        .cf-progress-line::before {
+            top: 16px;
+            left: 7%;
+            right: 7%;
+        }
+
+        .cf-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .cf-field.full {
+            grid-column: auto;
+        }
+
+        .cf-features {
+            grid-template-columns: 1fr;
+        }
+
+        .cf-actions {
+            gap: 12px;
+        }
+
+        .cf-btn {
+            width: 100%;
+        }
+    }
+</style>
+
+
+<main>
+
+    <!-- HERO -->
+
+    <section class="cf-hero">
+
+        <div class="cf-container">
+
+            <div class="cf-pill">
+                ✨ Build a CV that gets noticed
+            </div>
+
+            <h1>
+                Create your
+                <span class="cf-gradient-text">
+                    professional CV
+                </span>
+                in minutes.
+            </h1>
+
+            <p>
+                Tell us about yourself and CareerForge will help you
+                turn your experience, skills and education into a
+                professional CV ready for your next opportunity.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- BUILDER -->
+
+    <section class="cf-container">
+
+        <div class="cf-builder" id="cv-builder">
+
+            <!-- PROGRESS -->
+
+            <div class="cf-progress">
+
+                <div class="cf-progress-line">
+
+                    <button
+                        type="button"
+                        class="cf-step active"
+                        data-step="1"
+                    >
+                        <div class="cf-step-circle">1</div>
+                        Personal
+                    </button>
+
+                    <button
+                        type="button"
+                        class="cf-step"
+                        data-step="2"
+                    >
+                        <div class="cf-step-circle">2</div>
+                        Career
+                    </button>
+
+                    <button
+                        type="button"
+                        class="cf-step"
+                        data-step="3"
+                    >
+                        <div class="cf-step-circle">3</div>
+                        Education
+                    </button>
+
+                    <button
+                        type="button"
+                        class="cf-step"
+                        data-step="4"
+                    >
+                        <div class="cf-step-circle">4</div>
+                        Extras
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- FORM -->
+
+            <div class="cf-form-area">
+
+                <form method="POST">
+
+                    {% csrf_token %}
+
+
+                    <!-- STEP 1 -->
+
+                    <div
+                        class="cf-form-step active"
+                        data-form-step="1"
+                    >
+
+                        <div class="cf-step-heading">
+
+                            <h2>
+                                Let's start with you 👋
+                            </h2>
+
+                            <p>
+                                Give us your basic information so employers
+                                know who they're looking at.
+                            </p>
+
+                        </div>
+
+
+                        <div class="cf-grid">
+
+                            <div class="cf-field">
+
+                                <label for="id_full_name">
+                                    Full name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="full_name"
+                                    id="id_full_name"
+                                    placeholder="e.g. John Doe"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="cf-field">
+
+                                <label for="id_email">
+                                    Email address
+                                </label>
+
+                                <input
+                                    type="email"
+                                    name="email"
+                                    id="id_email"
+                                    placeholder="john@example.com"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="cf-field">
+
+                                <label for="id_phone">
+                                    Phone number
+                                    <span>(optional)</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="phone"
+                                    id="id_phone"
+                                    placeholder="+234 800 000 0000"
+                                >
+
+                            </div>
+
+
+                            <div class="cf-field">
+
+                                <label for="id_location">
+                                    Location
+                                    <span>(optional)</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="location"
+                                    id="id_location"
+                                    placeholder="Lagos, Nigeria"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="cf-actions">
+
+                            <span></span>
+
+                            <button
+                                type="button"
+                                class="cf-btn cf-btn-next"
+                            >
+                                Continue →
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- STEP 2 -->
+
+                    <div
+                        class="cf-form-step"
+                        data-form-step="2"
+                    >
+
+                        <div class="cf-step-heading">
+
+                            <h2>
+                                Tell us about your career 🚀
+                            </h2>
+
+                            <p>
+                                This information helps us understand the
+                                type of opportunities you're targeting.
+                            </p>
+
+                        </div>
+
+
+                        <div class="cf-grid">
+
+                            <div class="cf-field full">
+
+                                <label for="id_target_role">
+                                    Target role
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="target_role"
+                                    id="id_target_role"
+                                    placeholder="e.g. Junior Python Developer"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="cf-field full">
+
+                                <label for="id_bio">
+                                    Professional bio
+                                    <span>(optional)</span>
+                                </label>
+
+                                <textarea
+                                    name="bio"
+                                    id="id_bio"
+                                    placeholder="Tell us briefly about yourself, your strengths and what you want to achieve..."
+                                ></textarea>
+
+                                <small class="cf-help">
+                                    Don't worry about making it perfect.
+                                    CareerForge can help improve your wording.
+                                </small>
+
+                            </div>
+
+
+                            <div class="cf-field full">
+
+                                <label for="id_experience">
+                                    Work experience
+                                    <span>(optional)</span>
+                                </label>
+
+                                <textarea
+                                    name="experience"
+                                    id="id_experience"
+                                    placeholder="Company, role, dates and what you accomplished..."
+                                ></textarea>
+
+                                <small class="cf-help">
+                                    Include internships, freelance work,
+                                    part-time jobs or relevant experience.
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="cf-actions">
+
+                            <button
+                                type="button"
+                                class="cf-btn cf-btn-back"
+                            >
+                                ← Back
+                            </button>
+
+                            <button
+                                type="button"
+                                class="cf-btn cf-btn-next"
+                            >
+                                Continue →
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- STEP 3 -->
+
+                    <div
+                        class="cf-form-step"
+                        data-form-step="3"
+                    >
+
+                        <div class="cf-step-heading">
+
+                            <h2>
+                                Education & skills 🎓
+                            </h2>
+
+                            <p>
+                                Show employers what you've learned and what
+                                you can actually do.
+                            </p>
+
+                        </div>
+
+
+                        <div class="cf-grid">
+
+                            <div class="cf-field full">
+
+                                <label for="id_education">
+                                    Education
+                                    <span>(optional)</span>
+                                </label>
+
+                                <textarea
+                                    name="education"
+                                    id="id_education"
+                                    placeholder="School, degree, course, dates..."
+                                ></textarea>
+
+                            </div>
+
+
+                            <div class="cf-field full">
+
+                                <label for="id_skills">
+                                    Skills
+                                    <span>(optional)</span>
+                                </label>
+
+                                <textarea
+                                    name="skills"
+                                    id="id_skills"
+                                    placeholder="Python, Django, JavaScript, Git, communication..."
+                                ></textarea>
+
+                                <small class="cf-help">
+                                    Separate your skills with commas.
+                                </small>
+
+                            </div>
+
+
+                            <div class="cf-field full">
+
+                                <label for="id_projects">
+                                    Projects
+                                    <span>(optional)</span>
+                                </label>
+
+                                <textarea
+                                    name="projects"
+                                    id="id_projects"
+                                    placeholder="Project name, what you built, technologies used and the result..."
+                                ></textarea>
+
+                                <small class="cf-help">
+                                    Personal and school projects count too.
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="cf-actions">
+
+                            <button
+                                type="button"
+                                class="cf-btn cf-btn-back"
+                            >
+                                ← Back
+                            </button>
+
+                            <button
+                                type="button"
+                                class="cf-btn cf-btn-next"
+                            >
+                                Continue →
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- STEP 4 -->
+
+                    <div
+                        class="cf-form-step"
+                        data-form-step="4"
+                    >
+
+                        <div class="cf-step-heading">
+
+                            <h2>
+                                Almost there ✨
+                            </h2>
+
+                            <p>
+                                Add your professional links and any
+                                certifications you'd like to showcase.
+                            </p>
+
+                        </div>
+
+
+                        <div class="cf-grid">
+
+                            <div class="cf-field full">
+
+                                <label for="id_certifications">
+                                    Certifications
+                                    <span>(optional)</span>
+                                </label>
+
+                                <textarea
+                                    name="certifications"
+                                    id="id_certifications"
+                                    placeholder="Python Certificate — XYZ Academy — 2026..."
+                                ></textarea>
+
+                            </div>
+
+
+                            <div class="cf-field">
+
+                                <label for="id_linkedin">
+                                    LinkedIn
+                                    <span>(optional)</span>
+                                </label>
+
+                                <input
+                                    type="url"
+                                    name="linkedin"
+                                    id="id_linkedin"
+                                    placeholder="https://linkedin.com/in/yourname"
+                                >
+
+                            </div>
+
+
+                            <div class="cf-field">
+
+                                <label for="id_github">
+                                    GitHub
+                                    <span>(optional)</span>
+                                </label>
+
+                                <input
+                                    type="url"
+                                    name="github"
+                                    id="id_github"
+                                    placeholder="https://github.com/yourname"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="cf-review">
+
+                            <div class="cf-review-title">
+                                🤖 What happens next?
+                            </div>
+
+                            <p>
+                                CareerForge will take the information you've
+                                provided and turn it into a clean,
+                                professional CV. Your information will be
+                                structured into sections designed to make
+                                your experience easy for employers to scan.
+                            </p>
+
+                        </div>
+
+
+                        <div class="cf-actions">
+
+                            <button
+                                type="button"
+                                class="cf-btn cf-btn-back"
+                            >
+                                ← Back
+                            </button>
+
+                            <button
+                                type="submit"
+                                class="cf-btn cf-btn-submit"
+                            >
+                                Generate My CV ✨
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+        <!-- FEATURES -->
+
+        <div class="cf-features">
+
+            <div class="cf-feature">
+
+                <div class="cf-feature-icon">
+                    ✨
+                </div>
+
+                <h3>
+                    AI-assisted writing
+                </h3>
+
+                <p>
+                    Turn rough notes and experiences into
+                    professional CV content.
+                </p>
+
+            </div>
+
+
+            <div class="cf-feature">
+
+                <div class="cf-feature-icon">
+                    ⚡
+                </div>
+
+                <h3>
+                    Fast & simple
+                </h3>
+
+                <p>
+                    No complicated templates. Just provide your
+                    information and build your CV.
+                </p>
+
+            </div>
+
+
+            <div class="cf-feature">
+
+                <div class="cf-feature-icon">
+                    📄
+                </div>
+
+                <h3>
+                    Professional output
+                </h3>
+
+                <p>
+                    Create a clean CV designed to make your
+                    experience easy to understand.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<footer class="cf-footer">
+    CareerForge AI © 2026 · Build better. Apply smarter. 🚀
+</footer>
+
+
+<script>
+
+    let currentStep = 1;
+
+    const formSteps =
+        document.querySelectorAll(".cf-form-step");
+
+    const progressSteps =
+        document.querySelectorAll(".cf-step");
+
+    const nextButtons =
+        document.querySelectorAll(".cf-btn-next");
+
+    const backButtons =
+        document.querySelectorAll(".cf-btn-back");
+
+
+    function showStep(step) {
+
+        currentStep = step;
+
+
+        formSteps.forEach(function(formStep) {
+
+            const stepNumber =
+                Number(formStep.dataset.formStep);
+
+            formStep.classList.toggle(
+                "active",
+                stepNumber === step
+            );
+
+        });
+
+
+        progressSteps.forEach(function(progressStep) {
+
+            const stepNumber =
+                Number(progressStep.dataset.step);
+
+            progressStep.classList.toggle(
+                "active",
+                stepNumber === step
+            );
+
+            progressStep.classList.toggle(
+                "completed",
+                stepNumber < step
+            );
+
+        });
+
+
+        window.scrollTo({
+            top:
+                document.querySelector("#cv-builder").offsetTop - 90,
+            behavior: "smooth"
+        });
+
+    }
+
+
+    nextButtons.forEach(function(button) {
+
+        button.addEventListener("click", function() {
+
+            const currentForm =
+                document.querySelector(
+                    '.cf-form-step[data-form-step="' +
+                    currentStep +
+                    '"]'
+                );
+
+
+            const requiredInputs =
+                currentForm.querySelectorAll(
+                    "input[required], textarea[required]"
+                );
+
+
+            let valid = true;
+
+
+            requiredInputs.forEach(function(input) {
+
+                if (!input.value.trim()) {
+
+                    input.focus();
+
+                    valid = false;
+
+                }
+
+            });
+
+
+            if (!valid) {
+                return;
+            }
+
+
+            if (currentStep < 4) {
+
+                showStep(currentStep + 1);
+
+            }
+
+        });
+
+    });
+
+
+    backButtons.forEach(function(button) {
+
+        button.addEventListener("click", function() {
+
+            if (currentStep > 1) {
+
+                showStep(currentStep - 1);
+
+            }
+
+        });
+
+    });
+
+
+    progressSteps.forEach(function(stepButton) {
+
+        stepButton.addEventListener("click", function() {
+
+            const selectedStep =
+                Number(stepButton.dataset.step);
+
+
+            /*
+             * Allow moving backwards freely.
+             * Forward navigation happens through Continue.
+             */
+
+            if (selectedStep < currentStep) {
+
+                showStep(selectedStep);
+
+            }
+
+        });
+
+    });
+
+</script>
+
 {% endblock %}
+```

@@ -1,0 +1,331 @@
+/* =========================================
+   CAREERFORGE CV BUILDER
+========================================= */
+
+.builder-section {
+    max-width: 980px;
+    margin: 100px auto;
+    padding: 0 24px;
+}
+
+.builder-heading {
+    text-align: center;
+    max-width: 680px;
+    margin: 0 auto 45px;
+}
+
+.builder-heading h2 {
+    margin: 12px 0;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    letter-spacing: -0.04em;
+}
+
+.builder-heading p {
+    color: #8f91a3;
+    line-height: 1.7;
+}
+
+
+/* BUILDER CARD */
+
+.builder-card {
+    background: rgba(14, 15, 23, 0.92);
+    border: 1px solid #292b3b;
+    border-radius: 24px;
+    padding: 35px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
+}
+
+
+/* PROGRESS */
+
+.builder-progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 45px;
+}
+
+.progress-step {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #6f7180;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.progress-step span {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid #353747;
+    font-size: 13px;
+}
+
+.progress-step.active {
+    color: #ffffff;
+}
+
+.progress-step.active span {
+    background: #8b5cf6;
+    border-color: #8b5cf6;
+    color: #ffffff;
+}
+
+.progress-step.completed {
+    color: #a78bfa;
+}
+
+.progress-step.completed span {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: #8b5cf6;
+}
+
+.progress-line {
+    width: 55px;
+    height: 1px;
+    background: #292b3b;
+    margin: 0 12px;
+}
+
+
+/* FORM STEPS */
+
+.form-step {
+    display: none;
+}
+
+.form-step.active {
+    display: block;
+}
+
+.step-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 35px;
+}
+
+.step-number {
+    color: #a78bfa;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+
+.step-header h3 {
+    margin: 0 0 5px;
+    font-size: 22px;
+}
+
+.step-header p {
+    margin: 0;
+    color: #858797;
+    font-size: 14px;
+}
+
+
+/* FIELDS */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+}
+
+.field {
+    margin-bottom: 24px;
+}
+
+.field label {
+    display: block;
+    margin-bottom: 9px;
+    color: #e8e8ee;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.field input,
+.field textarea,
+.field select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 15px;
+    border-radius: 12px;
+    border: 1px solid #303241;
+    background: #0b0c12;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: 0.2s ease;
+}
+
+.field input {
+    min-height: 50px;
+}
+
+.field textarea {
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+    color: #555867;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+}
+
+.field-hint {
+    display: block;
+    margin-top: 8px;
+    color: #686a79;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.field-error {
+    display: block;
+    margin-top: 7px;
+    color: #f87171;
+}
+
+
+/* REVIEW */
+
+.review-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    margin: 30px 0;
+    padding: 20px;
+    border: 1px solid #303241;
+    border-radius: 15px;
+    background: rgba(139, 92, 246, 0.05);
+}
+
+.review-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #8b5cf6;
+    color: #ffffff;
+}
+
+.review-box strong {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.review-box p {
+    margin: 0;
+    color: #858797;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+
+/* BUTTONS */
+
+.step-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 35px;
+    padding-top: 25px;
+    border-top: 1px solid #242633;
+}
+
+.builder-next,
+.generate-button {
+    border: none;
+    border-radius: 11px;
+    padding: 14px 23px;
+    background: #8b5cf6;
+    color: white;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.builder-next:hover,
+.generate-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.25);
+}
+
+.builder-back {
+    border: 1px solid #303241;
+    border-radius: 11px;
+    padding: 13px 20px;
+    background: transparent;
+    color: #a0a2b1;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.builder-back:hover {
+    color: white;
+    border-color: #55586b;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+
+    .builder-section {
+        margin: 70px auto;
+        padding: 0 15px;
+    }
+
+    .builder-card {
+        padding: 22px;
+        border-radius: 18px;
+    }
+
+    .builder-progress {
+        justify-content: space-between;
+    }
+
+    .progress-step strong {
+        display: none;
+    }
+
+    .progress-line {
+        flex: 1;
+        width: auto;
+        margin: 0 8px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .step-actions {
+        gap: 12px;
+    }
+
+    .builder-next,
+    .generate-button,
+    .builder-back {
+        flex: 1;
+    }
+
+}

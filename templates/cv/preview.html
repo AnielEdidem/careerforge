@@ -1,28 +1,689 @@
 {% extends "base.html" %}
+
 {% block content %}
-<div class="actions">
-    <a class="button" href="{% url 'cv:download_pdf' profile.pk %}">Download PDF</a>
-    <a href="/">Create another</a>
+
+<style>
+    .preview-page {
+        min-height: 100vh;
+        background: #f5f6fa;
+        padding: 45px 20px 80px;
+    }
+
+    .preview-topbar {
+        max-width: 1100px;
+        margin: 0 auto 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .preview-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+        color: #171725;
+    }
+
+    .preview-brand-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+        background: linear-gradient(135deg, #6849ee, #925cf7);
+        color: white;
+        display: grid;
+        place-items: center;
+        font-weight: 900;
+    }
+
+    .preview-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .preview-edit,
+    .preview-download {
+        padding: 11px 17px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 800;
+        text-decoration: none;
+        transition: .2s ease;
+    }
+
+    .preview-edit {
+        background: white;
+        color: #555566;
+        border: 1px solid #dedee8;
+    }
+
+    .preview-download {
+        background: linear-gradient(135deg, #6849ee, #925cf7);
+        color: white;
+        box-shadow: 0 8px 20px rgba(104, 73, 238, .2);
+    }
+
+    .preview-edit:hover,
+    .preview-download:hover {
+        transform: translateY(-2px);
+    }
+
+    .preview-layout {
+        max-width: 1100px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: minmax(0, 760px) 300px;
+        gap: 28px;
+        align-items: start;
+    }
+
+    /* =========================
+       CV PAPER
+    ========================= */
+
+    .cv-paper {
+        background: #ffffff;
+        min-height: 1050px;
+        padding: 58px 62px;
+        box-shadow: 0 18px 55px rgba(25, 20, 60, .09);
+        border-radius: 4px;
+        color: #22222d;
+    }
+
+    .cv-header {
+        border-bottom: 2px solid #6849ee;
+        padding-bottom: 25px;
+        margin-bottom: 30px;
+    }
+
+    .cv-name {
+        margin: 0;
+        font-size: 39px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+        text-transform: uppercase;
+        color: #161620;
+    }
+
+    .cv-role {
+        margin: 9px 0 17px;
+        color: #6849ee;
+        font-size: 16px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1.3px;
+    }
+
+    .cv-contact {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 15px;
+        color: #6f6f7c;
+        font-size: 12px;
+    }
+
+    .cv-contact-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .cv-section {
+        margin-top: 29px;
+    }
+
+    .cv-section-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0 0 13px;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: #6849ee;
+        font-weight: 900;
+    }
+
+    .cv-section-title::after {
+        content: "";
+        height: 1px;
+        background: #e4e4eb;
+        flex: 1;
+    }
+
+    .cv-summary {
+        color: #50505c;
+        font-size: 13.5px;
+        line-height: 1.8;
+        margin: 0;
+    }
+
+    .cv-content {
+        white-space: pre-line;
+        color: #50505c;
+        font-size: 13.5px;
+        line-height: 1.8;
+        margin: 0;
+    }
+
+    .cv-content strong {
+        color: #22222d;
+    }
+
+    .cv-skills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .cv-skill {
+        background: #f1efff;
+        color: #5c43d9;
+        border: 1px solid #e4deff;
+        padding: 7px 11px;
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .cv-link {
+        color: #6849ee;
+        text-decoration: none;
+    }
+
+    /* =========================
+       PAYMENT CARD
+    ========================= */
+
+    .business-card {
+        position: sticky;
+        top: 95px;
+        background: white;
+        border: 1px solid #e6e6ed;
+        border-radius: 18px;
+        padding: 25px;
+        box-shadow: 0 15px 45px rgba(25, 20, 60, .07);
+    }
+
+    .business-badge {
+        display: inline-flex;
+        background: #f0edff;
+        color: #6548e6;
+        padding: 7px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 900;
+        margin-bottom: 14px;
+    }
+
+    .business-card h2 {
+        margin: 0 0 7px;
+        font-size: 22px;
+        color: #171725;
+    }
+
+    .business-card > p {
+        color: #777786;
+        font-size: 13px;
+        line-height: 1.6;
+        margin: 0 0 20px;
+    }
+
+    .price-box {
+        background: #f8f7fc;
+        border-radius: 13px;
+        padding: 16px;
+        margin-bottom: 20px;
+    }
+
+    .price-label {
+        color: #858592;
+        font-size: 11px;
+        font-weight: 700;
+        margin-bottom: 3px;
+    }
+
+    .price {
+        font-size: 29px;
+        font-weight: 900;
+        color: #171725;
+    }
+
+    .benefits {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 22px;
+    }
+
+    .benefits li {
+        display: flex;
+        gap: 9px;
+        margin-bottom: 12px;
+        color: #555562;
+        font-size: 13px;
+    }
+
+    .benefits li span {
+        color: #6849ee;
+        font-weight: 900;
+    }
+
+    .pay-button {
+        width: 100%;
+        display: block;
+        border: 0;
+        border-radius: 11px;
+        padding: 14px;
+        background: linear-gradient(135deg, #6849ee, #925cf7);
+        color: white;
+        text-align: center;
+        font-weight: 900;
+        cursor: pointer;
+        box-shadow: 0 9px 24px rgba(104, 73, 238, .22);
+    }
+
+    .secure-note {
+        text-align: center;
+        margin-top: 12px;
+        color: #9999a5;
+        font-size: 10px;
+    }
+
+    .preview-footer {
+        max-width: 760px;
+        margin: 25px auto 0;
+        text-align: center;
+        color: #9999a5;
+        font-size: 11px;
+    }
+
+    @media (max-width: 900px) {
+
+        .preview-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .business-card {
+            position: static;
+        }
+
+        .cv-paper {
+            padding: 42px 35px;
+        }
+
+    }
+
+    @media (max-width: 600px) {
+
+        .preview-page {
+            padding: 25px 12px 60px;
+        }
+
+        .preview-topbar {
+            align-items: flex-start;
+        }
+
+        .preview-actions {
+            flex-direction: column;
+        }
+
+        .preview-edit,
+        .preview-download {
+            width: 100%;
+            text-align: center;
+        }
+
+        .cv-paper {
+            padding: 32px 23px;
+        }
+
+        .cv-name {
+            font-size: 29px;
+        }
+
+        .cv-contact {
+            flex-direction: column;
+            gap: 6px;
+        }
+
+    }
+</style>
+
+
+<div class="preview-page">
+
+    <!-- TOP BAR -->
+
+    <div class="preview-topbar">
+
+        <a href="/" class="preview-brand">
+
+            <span class="preview-brand-icon">
+                C
+            </span>
+
+            CareerForge
+
+        </a>
+
+
+        <div class="preview-actions">
+
+            <a href="/" class="preview-edit">
+                ← Edit CV
+            </a>
+
+            <a class="top-button primary" href="#cv-preview">
+             {% comment %} View CV {% endcomment %}
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- MAIN -->
+
+    <div class="preview-layout">
+
+
+        <!-- CV -->
+
+        <article class="cv-paper" id="cv-preview">
+
+            <header class="cv-header">
+
+                <h1 class="cv-name">
+                    {{ profile.full_name }}
+                </h1>
+
+                {% if profile.target_role %}
+
+                    <div class="cv-role">
+                        {{ profile.target_role }}
+                    </div>
+
+                {% endif %}
+
+
+                <div class="cv-contact">
+
+                    {% if profile.email %}
+
+                        <span class="cv-contact-item">
+                            ✉ {{ profile.email }}
+                        </span>
+
+                    {% endif %}
+
+
+                    {% if profile.phone %}
+
+                        <span class="cv-contact-item">
+                            ☎ {{ profile.phone }}
+                        </span>
+
+                    {% endif %}
+
+
+                    {% if profile.location %}
+
+                        <span class="cv-contact-item">
+                            📍 {{ profile.location }}
+                        </span>
+
+                    {% endif %}
+
+
+                    {% if profile.linkedin %}
+
+                        <a
+                            href="{{ profile.linkedin }}"
+                            target="_blank"
+                            class="cv-contact-item cv-link"
+                        >
+                            LinkedIn
+                        </a>
+
+                    {% endif %}
+
+
+                    {% if profile.github %}
+
+                        <a
+                            href="{{ profile.github }}"
+                            target="_blank"
+                            class="cv-contact-item cv-link"
+                        >
+                            GitHub
+                        </a>
+
+                    {% endif %}
+
+                </div>
+
+            </header>
+
+
+            <!-- SUMMARY -->
+
+            {% if profile.generated_summary or profile.bio %}
+
+                <section class="cv-section">
+
+                    <h2 class="cv-section-title">
+                        Professional Summary
+                    </h2>
+
+                    <p class="cv-summary">
+                        {{ profile.generated_summary|default:profile.bio }}
+                    </p>
+
+                </section>
+
+            {% endif %}
+
+
+            <!-- EXPERIENCE -->
+
+            {% if profile.generated_experience or profile.experience %}
+
+                <section class="cv-section">
+
+                    <h2 class="cv-section-title">
+                        Experience
+                    </h2>
+
+                    <p class="cv-content">
+                        {{ profile.generated_experience|default:profile.experience }}
+                    </p>
+
+                </section>
+
+            {% endif %}
+
+
+            <!-- EDUCATION -->
+
+            {% if profile.education %}
+
+                <section class="cv-section">
+
+                    <h2 class="cv-section-title">
+                        Education
+                    </h2>
+
+                    <p class="cv-content">
+                        {{ profile.education }}
+                    </p>
+
+                </section>
+
+            {% endif %}
+
+
+            <!-- SKILLS -->
+
+            {% if profile.skills %}
+
+                <section class="cv-section">
+
+                    <h2 class="cv-section-title">
+                        Skills
+                    </h2>
+
+                    <div class="cv-skills">
+
+                        {% for skill in profile.skills.split %}
+                            <span class="cv-skill">
+                                {{ skill }}
+                            </span>
+                        {% endfor %}
+
+                    </div>
+
+                </section>
+
+            {% endif %}
+
+
+            <!-- PROJECTS -->
+
+            {% if profile.projects %}
+
+                <section class="cv-section">
+
+                    <h2 class="cv-section-title">
+                        Projects
+                    </h2>
+
+                    <p class="cv-content">
+                        {{ profile.projects }}
+                    </p>
+
+                </section>
+
+            {% endif %}
+
+
+            <!-- CERTIFICATIONS -->
+
+            {% if profile.certifications %}
+
+                <section class="cv-section">
+
+                    <h2 class="cv-section-title">
+                        Certifications
+                    </h2>
+
+                    <p class="cv-content">
+                        {{ profile.certifications }}
+                    </p>
+
+                </section>
+
+            {% endif %}
+
+        </article>
+
+
+        <!-- BUSINESS / PAYMENT CARD -->
+
+        <aside class="business-card">
+
+            <div class="business-badge">
+                ✨ CareerForge Professional
+            </div>
+
+            <h2>
+                Your CV is ready.
+            </h2>
+
+            <p>
+                Your information has been organized into a
+                professional CV. Unlock the final PDF when you're
+                ready to download it.
+            </p>
+
+
+            <div class="price-box">
+
+                <div class="price-label">
+                    ONE-TIME PAYMENT
+                </div>
+
+                <div class="price">
+                    ₦5,000
+                </div>
+
+            </div>
+
+
+            <ul class="benefits">
+
+                <li>
+                    <span>✓</span>
+                    Professional CV formatting
+                </li>
+
+                <li>
+                    <span>✓</span>
+                    AI-assisted CV content
+                </li>
+
+                <li>
+                    <span>✓</span>
+                    High-quality PDF
+                </li>
+
+                <li>
+                    <span>✓</span>
+                    One revision
+                </li>
+
+            </ul>
+
+
+            <!-- PAYMENT BUTTON
+                 PAYSTACK WILL BE CONNECTED HERE NEXT -->
+
+            <button
+                type="button"
+                class="pay-button"
+                onclick="showPaymentMessage()"
+            >
+                🔒 Pay ₦5,000 & Download
+            </button>
+
+
+            <div class="secure-note">
+                🔐 Secure payment · Instant access after payment
+            </div>
+
+        </aside>
+
+    </div>
+
+
+    <div class="preview-footer">
+        CareerForge AI · Build better. Apply smarter.
+    </div>
+
 </div>
 
-<article class="cv">
-    <h1>{{ profile.full_name }}</h1>
-    <h3>{{ profile.target_role }}</h3>
-    <p>{{ profile.email }} {% if profile.phone %} · {{ profile.phone }}{% endif %} {% if profile.location %} · {{ profile.location }}{% endif %}</p>
 
-    {% if profile.generated_summary or profile.bio %}
-    <h2>Professional Summary</h2>
-    <p>{{ profile.generated_summary|default:profile.bio }}</p>
-    {% endif %}
+<script>
 
-    {% if profile.generated_experience or profile.experience %}
-    <h2>Experience</h2>
-    <p class="pre">{{ profile.generated_experience|default:profile.experience }}</p>
-    {% endif %}
+    function showPaymentMessage() {
 
-    {% if profile.education %}<h2>Education</h2><p class="pre">{{ profile.education }}</p>{% endif %}
-    {% if profile.skills %}<h2>Skills</h2><p class="pre">{{ profile.skills }}</p>{% endif %}
-    {% if profile.projects %}<h2>Projects</h2><p class="pre">{{ profile.projects }}</p>{% endif %}
-    {% if profile.certifications %}<h2>Certifications</h2><p class="pre">{{ profile.certifications }}</p>{% endif %}
-</article>
+        alert(
+            "Payment is the next step. Paystack checkout will be connected here."
+        );
+
+    }
+
+</script>
+
 {% endblock %}

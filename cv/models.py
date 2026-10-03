@@ -1,6 +1,17 @@
+
 from django.db import models
+from django.contrib.auth.models import User
+
 
 class CVProfile(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="cv_profiles",
+        null=True,
+        blank=True
+    )
+
     full_name = models.CharField(max_length=150)
     email = models.EmailField()
     phone = models.CharField(max_length=40, blank=True)
